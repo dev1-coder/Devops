@@ -2,11 +2,12 @@ pipeline {
     agent any
 
     stages {
-        //stage('Checkout code') {
-            //steps {
+        stage('Checkout code') {
+            steps {
+                  checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: '12345', url: 'https://github.com/dev1-coder/Devops.git']])
                 //checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Rahul-training/Devops.git']])
-           // }
-       // }
+            }
+        }
      stage('Install Maven Build Tool') {
             steps { 
                 sh 'wget https://dlcdn.apache.org/maven/maven-3/3.9.4/binaries/apache-maven-3.9.4-bin.tar.gz'
@@ -34,7 +35,14 @@ pipeline {
             }
            }
         }
-     stage('Tomcat Prerequisites Installation') {
+        stage('upload artifacts to Nexus') {
+            steps {
+                dir('/var/lib/jenkins/workspace/test/addressbook/addressbook_main/target'){
+                nexusArtifactUploader artifacts: [[artifactId: 'artifact', classifier: '', file: 'addressbook.war', type: 'war']], credentialsId: 'nexusID', groupId: 'com.test.app', nexusUrl: '44.202.7.9:8081/', nexusVersion: 'nexus3', protocol: 'http', repository: 'testproject', version: '2.1.1-SNAPSHOT'
+                }
+            }
+        }
+    stage('Tomcat Prerequisites Installation') {
             steps {
                 sh 'sudo apt update'
                 sh 'sudo apt install openjdk-17-jre -y'
